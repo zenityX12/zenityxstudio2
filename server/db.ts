@@ -9,11 +9,18 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && ENV.databaseUrl) {
     try {
+      console.log("[Database] Initializing connection...");
+      console.log("[Database] DATABASE_URL exists:", !!ENV.databaseUrl);
+      console.log("[Database] DATABASE_URL length:", ENV.databaseUrl.length);
       _db = drizzle(ENV.databaseUrl);
+      console.log("[Database] Connection initialized successfully");
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] Failed to connect:", error);
+      console.error("[Database] DATABASE_URL:", ENV.databaseUrl.substring(0, 30) + "...");
       _db = null;
     }
+  } else if (!ENV.databaseUrl) {
+    console.error("[Database] DATABASE_URL is not set in environment");
   }
   return _db;
 }
@@ -25,8 +32,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
+    const error = new Error("Database connection not available. Please check DATABASE_URL configuration.");
+    console.error("[Database] Cannot upsert user:", error.message);
+    throw error;
   }
 
   try {
