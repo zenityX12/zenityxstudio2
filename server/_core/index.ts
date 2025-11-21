@@ -38,6 +38,53 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Health check endpoint for debugging
+  app.get("/api/health", async (req, res) => {
+    const { getDb } = await import("../db");
+    const { ENV } = await import("./env");
+    
+    const healthInfo: any = {
+      timestamp: new Date().toISOString(),
+      version: "3f0319b0",
+      environment: {
+        NODE_ENV: process.env.NODE_ENV || "not set",
+        APP_ID: ENV.appId ? "set" : "not set",
+        OAUTH_SERVER_URL: ENV.oAuthServerUrl ? "set" : "not set",
+      },
+      database: {
+        DATABASE_URL_exists: !!ENV.databaseUrl,
+        DATABASE_URL_length: ENV.databaseUrl?.length || 0,
+        DATABASE_URL_preview: ENV.databaseUrl?.substring(0, 50) + "...",
+        connection_status: "checking...",
+      },
+    };
+
+    // Test database connection
+    try {
+      const db = await getDb();
+      if (db) {
+        healthInfo.database.connection_status = "connected";
+        // Try a simple query
+        try {
+          const result = await db.execute("SELECT 1 as test");
+          healthInfo.database.query_test = "success";
+          healthInfo.database.query_result = result;
+        } catch (queryError: any) {
+          healthInfo.database.query_test = "failed";
+          healthInfo.database.query_error = queryError.message;
+        }
+      } else {
+        healthInfo.database.connection_status = "failed - db is null";
+      }
+    } catch (dbError: any) {
+      healthInfo.database.connection_status = "error";
+      healthInfo.database.error = dbError.message;
+      healthInfo.database.error_stack = dbError.stack;
+    }
+
+    res.json(healthInfo);
+  });
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
