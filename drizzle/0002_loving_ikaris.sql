@@ -1,0 +1,1 @@
+ALTER TABLE `generations` ADD `type` enum('image','video') NOT NULL;

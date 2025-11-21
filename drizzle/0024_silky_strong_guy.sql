@@ -1,0 +1,1 @@
+ALTER TABLE `generations` ADD `thumbnailUrl` text;

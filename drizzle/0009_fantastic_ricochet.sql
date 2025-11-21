@@ -1,0 +1,1 @@
+ALTER TABLE `aiModels` ADD `kiePricingOptions` text;

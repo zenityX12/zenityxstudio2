@@ -1,0 +1,1 @@
+ALTER TABLE `inviteCodes` ADD `note` text;

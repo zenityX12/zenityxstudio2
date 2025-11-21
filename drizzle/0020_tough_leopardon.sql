@@ -1,0 +1,21 @@
+CREATE TABLE `omnihumanGenerations` (
+	`id` varchar(64) NOT NULL,
+	`userId` varchar(64) NOT NULL,
+	`imageUrl` text NOT NULL,
+	`audioUrl` text NOT NULL,
+	`audioDuration` int NOT NULL,
+	`prompt` text,
+	`maskUrl` text,
+	`fastMode` int NOT NULL DEFAULT 0,
+	`status` enum('pending','in_queue','generating','done','failed','timeout') NOT NULL DEFAULT 'pending',
+	`taskId` text,
+	`resultUrl` text,
+	`errorMessage` text,
+	`creditsUsed` decimal(10,1) NOT NULL DEFAULT '0.0',
+	`refunded` int NOT NULL DEFAULT 0,
+	`isHidden` int NOT NULL DEFAULT 0,
+	`createdAt` timestamp DEFAULT (now()),
+	`completedAt` timestamp,
+	`lastPolledAt` timestamp,
+	CONSTRAINT `omnihumanGenerations_id` PRIMARY KEY(`id`)
+);

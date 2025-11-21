@@ -1,0 +1,383 @@
+import { useState, useRef, useEffect } from 'react';
+import { X, ImageIcon, VideoIcon, Upload, Loader2 } from 'lucide-react';
+import { trpc } from '@/lib/trpc';
+import { toast } from 'sonner';
+
+interface MobileGenerationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+/**
+ * Mobile Generation Modal - Compact Facebook-style
+ * Full desktop features in mobile-optimized compact layout
+ */
+export default function MobileGenerationModal({ isOpen, onClose }: MobileGenerationModalProps) {
+  const [type, setType] = useState<'image' | 'video'>('image');
+  const [selectedModelId, setSelectedModelId] = useState<string>('');
+  const [prompt, setPrompt] = useState('');
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch models
+  const { data: allModels = [], isLoading: modelsLoading } = trpc.models.list.useQuery();
+  
+  // Filter models by type
+  const models = allModels.filter((m) => m.type === type && m.isActive === true);
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('[MobileGenerationModal] isOpen:', isOpen);
+    console.log('[MobileGenerationModal] allModels:', allModels);
+    console.log('[MobileGenerationModal] type:', type);
+    console.log('[MobileGenerationModal] filtered models:', models);
+    console.log('[MobileGenerationModal] modelsLoading:', modelsLoading);
+  }, [isOpen, allModels, type, models, modelsLoading]);
+
+  // Get selected model
+  const selectedModel = models.find((m) => m.id === selectedModelId);
+
+  // Auto-select first model when type changes
+  useEffect(() => {
+    if (models.length > 0 && !selectedModelId) {
+      setSelectedModelId(models[0].id);
+    }
+  }, [models, selectedModelId]);
+
+  // Check if model supports image upload
+  const supportsImageUpload = selectedModel?.capabilities?.imageToVideo || selectedModel?.capabilities?.imageToImage;
+
+  // Model-specific options state
+  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [duration, setDuration] = useState(5);
+  const [quality, setQuality] = useState('standard');
+
+  // Create generation mutation
+  const createGeneration = trpc.generations.create.useMutation({
+    onSuccess: () => {
+      toast.success('Generation started!');
+      onClose();
+      // Reset form
+      setPrompt('');
+      setUploadedImage(null);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to start generation');
+    },
+  });
+
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be less than 10MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = () => {
+        setUploadedImage(reader.result as string);
+        setIsUploading(false);
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read image');
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error('Failed to upload image');
+      setIsUploading(false);
+    }
+  };
+
+  // Handle generate
+  const handleGenerate = () => {
+    if (!prompt.trim()) {
+      toast.error('Please enter a prompt');
+      return;
+    }
+
+    if (!selectedModelId) {
+      toast.error('Please select a model');
+      return;
+    }
+
+    // Build options based on model
+    const options: Record<string, any> = {};
+    
+    if (selectedModel?.capabilities?.aspectRatio) {
+      options.aspectRatio = aspectRatio;
+    }
+    
+    if (selectedModel?.capabilities?.duration && type === 'video') {
+      options.duration = duration;
+    }
+
+    if (uploadedImage && supportsImageUpload) {
+      options.imageUrl = uploadedImage;
+    }
+
+    createGeneration.mutate({
+      modelId: selectedModelId,
+      prompt,
+      options,
+    });
+  };
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-background">
+      {/* Header - Compact */}
+      <div className="sticky top-0 z-10 bg-background border-b border-border">
+        <div className="flex items-center justify-between px-3 h-12">
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-muted rounded-full transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <h2 className="text-sm font-semibold">Create</h2>
+          <div className="w-8" /> {/* Spacer */}
+        </div>
+      </div>
+
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto pb-16">
+        <div className="p-3 space-y-3">
+          {/* Type Selector - Compact Pills */}
+          <div className="flex gap-1.5 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => {
+                setType('image');
+                setSelectedModelId('');
+                setUploadedImage(null);
+              }}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                type === 'image'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+              Image
+            </button>
+            <button
+              onClick={() => {
+                setType('video');
+                setSelectedModelId('');
+                setUploadedImage(null);
+              }}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                type === 'video'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <VideoIcon className="h-3.5 w-3.5" />
+              Video
+            </button>
+          </div>
+
+          {/* Prompt Input - Compact */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5">Prompt</label>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe what you want to create..."
+              className="w-full px-3 py-2 text-sm bg-muted border-0 rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+              rows={3}
+            />
+          </div>
+
+          {/* Image Upload (if supported) */}
+          {supportsImageUpload && (
+            <div>
+              <label className="block text-xs font-medium mb-1.5">Reference Image (Optional)</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              {uploadedImage ? (
+                <div className="relative">
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded"
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={() => setUploadedImage(null)}
+                    className="absolute top-1.5 right-1.5 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-full h-24 flex flex-col items-center justify-center gap-1.5 bg-muted border-2 border-dashed border-border rounded-lg hover:border-primary transition-colors"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Tap to upload</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Model Selector - Compact */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5">Model</label>
+            {modelsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : models.length === 0 ? (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                No {type} models available
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {models.map((model) => (
+                  <button
+                    key={model.id}
+                    onClick={() => setSelectedModelId(model.id)}
+                    className={`p-2 text-left rounded-lg border transition-colors ${
+                      selectedModelId === model.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="text-xs font-medium truncate">{model.name}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      {model.pricing?.perGeneration || 0} credits
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Model-Specific Options */}
+          {selectedModel && (
+            <div className="space-y-2.5">
+              {/* Aspect Ratio */}
+              {selectedModel.capabilities?.aspectRatio && (
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Aspect Ratio</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {['16:9', '9:16', '1:1'].map((ratio) => (
+                      <button
+                        key={ratio}
+                        onClick={() => setAspectRatio(ratio)}
+                        className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          aspectRatio === ratio
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        {ratio}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Duration (for video) */}
+              {type === 'video' && selectedModel.capabilities?.duration && (
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">
+                    Duration: {duration}s
+                  </label>
+                  <input
+                    type="range"
+                    min="3"
+                    max="10"
+                    step="1"
+                    value={duration}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+                    <span>3s</span>
+                    <span>10s</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Quality */}
+              {selectedModel.capabilities?.quality && (
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Quality</label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {['standard', 'hd'].map((q) => (
+                      <button
+                        key={q}
+                        onClick={() => setQuality(q)}
+                        className={`px-2 py-1.5 text-xs font-medium rounded-md capitalize transition-colors ${
+                          quality === q
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Fixed Bottom Button - Compact */}
+      <div className="fixed bottom-0 left-0 right-0 p-3 bg-background border-t border-border">
+        <button
+          onClick={handleGenerate}
+          disabled={createGeneration.isPending || !prompt.trim() || !selectedModelId}
+          className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
+        >
+          {createGeneration.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            'Generate'
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
