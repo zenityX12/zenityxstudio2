@@ -115,3 +115,13 @@
 - [x] Test in dev server (working - database connected)
 - [ ] Publish and test in production
 - [ ] Analyze results and fix the root cause
+
+## Phase 17: Investigate Production Server Error (500 on Health Check)
+- [x] Create simple static health endpoint without database dependency
+- [x] Check if production server is running at all
+- [x] Check production build errors
+- [x] Investigate why even simple endpoints return 500 (Found: web-static template has no backend)
+- [ ] Upgrade template to web-db-user
+- [ ] Keep using TiDB database (DATABASE_URL secret)
+- [ ] Test health check in production again
+- [ ] Test login in production
