@@ -2,6 +2,7 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
+import { ENV } from "./env";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -57,21 +58,72 @@ export function registerOAuthRoutes(app: Express) {
     } catch (error: any) {
       console.error("[OAuth] Callback failed:", error.message);
       console.error("[OAuth] Error details:", error.response?.data || error);
+      console.error("[OAuth] Error stack:", error.stack);
       
       // Check if it's an expired/invalid code error
       if (error.response?.status === 401 || error.message?.includes('invalid or expired')) {
-        // Redirect to login page with error message
         const loginUrl = `/login?error=expired`;
         console.log("[OAuth] Redirecting to login due to expired code");
         res.redirect(302, loginUrl);
         return;
       }
       
-      res.status(500).json({ 
-        error: "OAuth callback failed",
-        message: error.message,
-        details: error.response?.data?.message || "Please try logging in again"
-      });
+      // Return detailed error HTML for debugging
+      const errorHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Error - Debug Info</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+    h1 { color: #d32f2f; }
+    .section { margin: 20px 0; padding: 15px; background: #f9f9f9; border-left: 4px solid #2196f3; }
+    .error { background: #ffebee; border-left-color: #d32f2f; }
+    pre { overflow-x: auto; }
+    .label { font-weight: bold; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 OAuth Login Error - Debug Information</h1>
+    
+    <div class="section error">
+      <div class="label">Error Message:</div>
+      <pre>${error.message || 'Unknown error'}</pre>
+    </div>
+    
+    <div class="section">
+      <div class="label">DATABASE_URL Status:</div>
+      <pre>Exists: ${!!ENV.databaseUrl ? 'YES' : 'NO'}
+Length: ${ENV.databaseUrl?.length || 0} characters
+First 50 chars: ${ENV.databaseUrl?.substring(0, 50) || 'N/A'}...</pre>
+    </div>
+    
+    <div class="section">
+      <div class="label">Environment:</div>
+      <pre>NODE_ENV: ${process.env.NODE_ENV || 'not set'}
+APP_ID: ${ENV.appId || 'not set'}
+OAUTH_SERVER_URL: ${ENV.oAuthServerUrl || 'not set'}</pre>
+    </div>
+    
+    <div class="section error">
+      <div class="label">Error Stack:</div>
+      <pre>${error.stack || 'No stack trace'}</pre>
+    </div>
+    
+    <div class="section">
+      <div class="label">Response Data:</div>
+      <pre>${JSON.stringify(error.response?.data, null, 2) || 'No response data'}</pre>
+    </div>
+    
+    <p><a href="/">← Back to Home</a></p>
+  </div>
+</body>
+</html>
+      `;
+      
+      res.status(500).send(errorHtml);
     }
   });
 }
