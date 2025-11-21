@@ -14,8 +14,7 @@ import {
   Sun,
   Moon,
   CreditCard,
-  Gift,
-  Shield
+  Gift
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TopupModal } from "@/components/TopupModal";
@@ -107,19 +106,7 @@ function SidebarComponent({ isCollapsed, onToggle, currentTab, onTabChange }: Si
     },
   ];
 
-  // Add Admin button for admin and sale roles
-  const showAdminButton = user && (user.role === "admin" || user.role === "sale");
-  const isAdminPage = location === "/admin";
-
-  if (showAdminButton && !isAdminPage) {
-    menuItems.push({
-      id: "admin",
-      label: "Admin",
-      icon: Shield,
-      path: "/admin",
-      active: false,
-    });
-  }
+  // Admin menu removed from sidebar - available in top navigation only
 
   return (
     <>

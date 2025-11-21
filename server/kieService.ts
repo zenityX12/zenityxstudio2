@@ -1,4 +1,5 @@
 import { getActiveAPIKey } from "./db";
+import { ENV } from "./_core/env";
 
 interface KieGenerationRequest {
   model: string;
@@ -228,7 +229,7 @@ export async function generateWithKie(request: KieGenerationRequest): Promise<Ki
         requestBody = {
           model: request.model,
           input: inputParams,
-          callBackUrl: `https://zenityxai-deqzqdqy.manus.space/api/webhook/kie-callback`,
+          callBackUrl: ENV.webhookBaseUrl ? `${ENV.webhookBaseUrl}/api/webhook/kie-callback` : undefined,
         };
       }
     } else if (request.type === "video") {
@@ -241,7 +242,7 @@ export async function generateWithKie(request: KieGenerationRequest): Promise<Ki
           model: request.model,
           aspectRatio: request.aspectRatio || "16:9",
           generationType: request.generationType || "TEXT_2_VIDEO",
-          callBackUrl: `https://zenityxai-deqzqdqy.manus.space/api/webhook/kie-callback`,
+          callBackUrl: ENV.webhookBaseUrl ? `${ENV.webhookBaseUrl}/api/webhook/kie-callback` : undefined,
         };
         
         // Add imageUrls if provided
@@ -328,7 +329,7 @@ export async function generateWithKie(request: KieGenerationRequest): Promise<Ki
         requestBody = {
           model: request.model,
           input: inputParams,
-          callBackUrl: `https://zenityxai-deqzqdqy.manus.space/api/webhook/kie-callback`,
+          callBackUrl: ENV.webhookBaseUrl ? `${ENV.webhookBaseUrl}/api/webhook/kie-callback` : undefined,
         };
       } else if (request.model.startsWith("kling/v2-1")) {
         // Kling 2.1 models use unified /api/v1/jobs/createTask endpoint
@@ -362,7 +363,7 @@ export async function generateWithKie(request: KieGenerationRequest): Promise<Ki
         requestBody = {
           model: request.model,
           input: inputParams,
-          callBackUrl: `https://zenityxai-deqzqdqy.manus.space/api/webhook/kie-callback`,
+          callBackUrl: ENV.webhookBaseUrl ? `${ENV.webhookBaseUrl}/api/webhook/kie-callback` : undefined,
         };
       } else if (request.model.startsWith("bytedance/v1")) {
         // Seedance (Bytedance) models use unified /api/v1/jobs/createTask endpoint
@@ -413,7 +414,7 @@ export async function generateWithKie(request: KieGenerationRequest): Promise<Ki
         requestBody = {
           model: request.model,
           input: inputParams,
-          callBackUrl: `https://zenityxai-deqzqdqy.manus.space/api/webhook/kie-callback`,
+          callBackUrl: ENV.webhookBaseUrl ? `${ENV.webhookBaseUrl}/api/webhook/kie-callback` : undefined,
         };
       }
     }

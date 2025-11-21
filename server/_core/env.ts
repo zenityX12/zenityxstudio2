@@ -9,4 +9,5 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   omisePublicKey: process.env.OMISE_PUBLIC_KEY ?? "",
   omiseSecretKey: process.env.OMISE_SECRET_KEY ?? "",
+  webhookBaseUrl: process.env.WEBHOOK_BASE_URL ?? "",
 };
