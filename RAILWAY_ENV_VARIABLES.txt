@@ -1,0 +1,11 @@
+# Copy ทั้งหมดนี้ไปวางใน Railway Dashboard → Variables
+
+DATABASE_URL=mysql://M6RiQS69meh6Ri6.root:0i9PkiyY7Uf3aCoD@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/test?ssl={"rejectUnauthorized":true}
+
+JWT_SECRET=167d12171df8934daaa77fe28483c9f7e27a6b4f2cf2b3c4249be9d394b44fb1a004d464bf48abc6a5e352a29e4d81f75cc4186a816b55e4eae2eb605292dae7
+
+NODE_ENV=production
+
+KIE_API_KEY=kie-api-key-1
+
+PORT=3000
