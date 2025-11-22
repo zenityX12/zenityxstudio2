@@ -134,8 +134,15 @@
 - [x] Implement logout API endpoint (POST /api/auth/logout)
 - [x] Create JWT token management (auth-utils.ts)
 - [x] Test authentication APIs in dev server (all working!)
-- [ ] Create login/register UI pages
-- [ ] Integrate frontend with auth APIs
-- [ ] Test full authentication flow in browser
-- [ ] Deploy to Railway
-- [ ] Test in production
+- [x] Create login/register UI pages
+- [x] Integrate frontend with auth APIs
+- [x] Test full authentication flow in browser
+- [x] Deploy to Railway
+- [x] Test in production
+
+## Phase 19: Fix Production TypeError: Invalid URL
+- [x] วิเคราะห์สาเหตุของ error (Invalid URL หลัง login - caused by getLoginUrl() using undefined OAuth env vars)
+- [x] แก้ไข main.tsx, DashboardLayout.tsx, MobileHeader.tsx ให้ใช้ /login แทน getLoginUrl()
+- [x] ทดสอบใน dev server (ทำงานถูกต้อง)
+- [x] Push code ไป GitHub (commit 3dea757)
+- [x] พร้อม deploy ไป production (รอ Railway auto-deploy หรือ publish ผ่าน Manus UI)
