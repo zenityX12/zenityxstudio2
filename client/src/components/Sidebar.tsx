@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation, useRoute } from "wouter";
 import { cn } from "@/lib/utils";
 import { LogoImage } from "@/components/Logo";
@@ -42,8 +43,7 @@ function SidebarComponent({ isCollapsed, onToggle, currentTab, onTabChange }: Si
   const [topupModalOpen, setTopupModalOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
-  const { data: user } = trpc.auth.me.useQuery();
-  const isAuthenticated = !!user;
+  const { user, isAuthenticated, logout } = useAuth();
   const utils = trpc.useUtils();
   
   const redeemMutation = trpc.redeemInvite.useMutation({

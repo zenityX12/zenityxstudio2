@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { SidebarProvider } from "./contexts/SidebarContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import Home from "./pages/Home";
 import Studio from "./pages/Studio";
 import Gallery from "./pages/Gallery";
@@ -19,13 +20,16 @@ import MobileProfile from "./pages/mobile/MobileProfile";
 import MobileAdmin from "./pages/mobile/MobileAdmin";
 import MobileRedeem from "./pages/mobile/MobileRedeem";
 import MobileVerify from "./pages/mobile/MobileVerify";
+import Login from "./pages/Login";
 import { AppLayout } from "./components/AppLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useLocation } from "wouter";
 
 function Router() {
   const [location] = useLocation();
-  // Exclude mobile routes, home, payment callback, and 404 from sidebar layout
+  // Exclude mobile routes, home, login, payment callback, and 404 from sidebar layout
   const showSidebar = location !== "/" && 
+                      location !== "/login" &&
                       location !== "/payment/callback" && 
                       location !== "/404" &&
                       !location.startsWith("/mobile/");
@@ -34,6 +38,7 @@ function Router() {
     return (
       <Switch>
         <Route path={"/"} component={Home} />
+        <Route path="/login" component={Login} />
         <Route path={"/payment/callback"} component={PaymentCallback} />
         <Route path={"/mobile/profile"} component={MobileProfile} />
         <Route path={"/mobile/admin"} component={MobileAdmin} />
@@ -46,19 +51,21 @@ function Router() {
   }
 
   return (
-    <AppLayout>
-      <Switch>
-        <Route path={"/studio"} component={Studio} />
-        <Route path={"/gallery"} component={Gallery} />
-        <Route path={"/history"} component={History} />
+    <ProtectedRoute>
+      <AppLayout>
+        <Switch>
+          <Route path={"/studio"} component={Studio} />
+          <Route path={"/gallery"} component={Gallery} />
+          <Route path={"/history"} component={History} />
 
-        <Route path={"/transactions"} component={TransactionHistory} />
-        <Route path={"/admin"} component={Admin} />
-        <Route path={"/system-settings"} component={SystemSettings} />
-        <Route path={"/profile"} component={Profile} />
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+          <Route path={"/transactions"} component={TransactionHistory} />
+          <Route path={"/admin"} component={Admin} />
+          <Route path={"/system-settings"} component={SystemSettings} />
+          <Route path={"/profile"} component={Profile} />
+          <Route component={NotFound} />
+        </Switch>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }
 
@@ -71,12 +78,14 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <SidebarProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </SidebarProvider>
+        <AuthProvider>
+          <SidebarProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </SidebarProvider>
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

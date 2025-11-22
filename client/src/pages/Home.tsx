@@ -1,6 +1,6 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { getLoginUrl } from "@/const";
+
 import { ArrowRight, Sparkles, Video, Image as ImageIcon, Facebook, Mail, Phone, MapPin, MessageCircle, Sun, Moon } from "lucide-react";
 import { Link, Redirect } from "wouter";
 import { useIsMobile } from "@/hooks/useMediaQuery";
@@ -57,7 +57,7 @@ export default function Home() {
               </>
             ) : (
               <Button asChild size="lg">
-                <a href={getLoginUrl()}>เข้าสู่ระบบ</a>
+                <Link href="/login">เข้าสู่ระบบ</Link>
               </Button>
             )}
           </div>
@@ -100,10 +100,10 @@ export default function Home() {
               ) : (
                 <>
                   <Button asChild size="lg" className="text-lg h-14 px-8 !bg-black dark:!bg-white hover:!bg-gray-900 dark:hover:!bg-gray-100 !text-white dark:!text-black shadow-lg hover:shadow-xl transition-all w-full sm:w-auto sm:min-w-[180px]">
-                    <a href={getLoginUrl()}>
+                    <Link href="/login">
                       Get Started
                       <ArrowRight className="ml-2 h-5 w-5" />
-                    </a>
+                    </Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="text-lg h-14 px-8 w-full sm:w-auto sm:min-w-[180px]">
                     <Link href="/gallery">View Gallery</Link>
@@ -149,7 +149,7 @@ export default function Home() {
                       </Button>
                     ) : (
                       <Button asChild className="w-full">
-                        <a href={getLoginUrl()}>ลองใช้งาน</a>
+                        <Link href="/login">ลองใช้งาน</Link>
                       </Button>
                     )}
                   </div>
@@ -187,7 +187,7 @@ export default function Home() {
                       </Button>
                     ) : (
                       <Button asChild className="w-full">
-                        <a href={getLoginUrl()}>ลองใช้งาน</a>
+                        <Link href="/login">ลองใช้งาน</Link>
                       </Button>
                     )}
                   </div>
@@ -225,7 +225,7 @@ export default function Home() {
                       </Button>
                     ) : (
                       <Button asChild className="w-full">
-                        <a href={getLoginUrl()}>ลองใช้งาน</a>
+                        <Link href="/login">ลองใช้งาน</Link>
                       </Button>
                     )}
                   </div>
@@ -253,7 +253,7 @@ export default function Home() {
                 </Button>
               ) : (
                 <Button asChild size="lg" className="text-lg h-14 px-8">
-                  <a href={getLoginUrl()}>เริ่มต้นใช้งาน</a>
+                  <Link href="/login">เริ่มต้นใช้งาน</Link>
                 </Button>
               )}
               <Button asChild size="lg" variant="outline" className="text-lg h-14 px-8">
