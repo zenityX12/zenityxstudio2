@@ -125,3 +125,17 @@
 - [ ] Keep using TiDB database (DATABASE_URL secret)
 - [ ] Test health check in production again
 - [ ] Test login in production
+
+## Phase 18: Build New Authentication System (Independent from Manus OAuth)
+- [x] Design database schema for users table (added passwordHash column)
+- [x] Create authentication architecture (Email/Password + JWT)
+- [x] Implement register API endpoint (POST /api/auth/register)
+- [x] Implement login API endpoint (POST /api/auth/login)
+- [x] Implement logout API endpoint (POST /api/auth/logout)
+- [x] Create JWT token management (auth-utils.ts)
+- [x] Test authentication APIs in dev server (all working!)
+- [ ] Create login/register UI pages
+- [ ] Integrate frontend with auth APIs
+- [ ] Test full authentication flow in browser
+- [ ] Deploy to Railway
+- [ ] Test in production

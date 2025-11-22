@@ -278,7 +278,7 @@ class SDKServer {
         await db.upsertUser({
           id: userInfo.openId,
           name: userInfo.name || null,
-          email: userInfo.email ?? null,
+          email: userInfo.email || `${userInfo.openId}@manus.local`, // Fallback email if not provided
           loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
           lastSignedIn: signedInAt,
         });
@@ -295,6 +295,7 @@ class SDKServer {
 
     await db.upsertUser({
       id: user.id,
+      email: user.email, // Include required email field
       lastSignedIn: signedInAt,
     });
 

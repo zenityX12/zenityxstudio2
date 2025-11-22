@@ -8,13 +8,14 @@ import { mysqlEnum, mysqlTable, text, timestamp, varchar, int, boolean, decimal 
 export const users = mysqlTable("users", {
   id: varchar("id", { length: 64 }).primaryKey(),
   name: text("name"),
-  email: varchar("email", { length: 320 }),
+  email: varchar("email", { length: 320 }).unique().notNull(), // Make email unique and required
+  passwordHash: varchar("passwordHash", { length: 255 }), // bcrypt hashed password (nullable for OAuth users)
   username: varchar("username", { length: 64 }).unique(), // Unique username for user profile
   bio: text("bio"), // User bio/description
   phone: varchar("phone", { length: 20 }), // Phone number (optional)
   birthday: varchar("birthday", { length: 10 }), // Birthday in YYYY-MM-DD format
   profilePicture: text("profilePicture"), // Profile picture URL
-  loginMethod: varchar("loginMethod", { length: 64 }),
+  loginMethod: varchar("loginMethod", { length: 64 }).default("email"), // 'email' | 'google' | 'manus'
   role: mysqlEnum("role", ["user", "admin", "sale"]).default("user").notNull(),
   isVerified: int("isVerified").default(1).notNull(), // 1 = verified, 0 = not verified
   preferences: text("preferences"), // JSON string for user preferences (theme, notifications, etc.)

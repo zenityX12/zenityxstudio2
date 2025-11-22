@@ -4,6 +4,7 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import authRoutes from "./auth-routes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -85,6 +86,9 @@ async function startServer() {
     res.json(healthInfo);
   });
 
+  // Authentication routes (Email/Password login)
+  app.use("/api/auth", authRoutes);
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 

@@ -44,7 +44,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     const updateSet: Record<string, unknown> = {};
 
     // Handle all text fields that might be passed
-    const textFields = ["name", "email", "loginMethod", "username", "bio", "phone", "birthday", "profilePicture", "preferences"] as const;
+    const textFields = ["name", "email", "passwordHash", "loginMethod", "username", "bio", "phone", "birthday", "profilePicture", "preferences"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -537,6 +537,13 @@ export async function getUserByUsername(username: string) {
   const db = await getDb();
   if (!db) return null;
   const [user] = await db.select().from(users).where(eq(users.username, username));
+  return user || null;
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const [user] = await db.select().from(users).where(eq(users.email, email));
   return user || null;
 }
 
